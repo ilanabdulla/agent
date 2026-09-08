@@ -1,9 +1,10 @@
 import os , urllib.parse , urllib.request , render_template
+from app.youtube import youtube_bp
 
 gemini_api_key = "Gemini_API_Key";
 
 def home()
- return render_template (" indexx.html;")
+ return render_template (" index.html;")
 
 def create_app():
   app = Flask(_name_)
