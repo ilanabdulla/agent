@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonara</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%230B1330%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2227%22%20fill%3D%22none%22%20stroke%3D%22%233B7CFF%22%20stroke-width%3D%222%22%20opacity%3D%220.5%22/%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23F5F7FF%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M32%2014a7%207%200%200%200-7%207v14a7%207%200%200%200%2014%200V21a7%207%200%200%200-7-7z%22/%3E%3Cpath%20d%3D%22M46%2030v3a14%2014%200%200%201-28%200v-3%22/%3E%3Cline%20x1%3D%2232%22%20y1%3D%2247%22%20x2%3D%2232%22%20y2%3D%2253%22/%3E%3Cline%20x1%3D%2224%22%20y1%3D%2253%22%20x2%3D%2240%22%20y2%3D%2253%22/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070E;
+    --card-1:#101a3d;
+    --card-2:#060912;
+    --blue:#3B7CFF;
+    --blue-soft:#7FA8FF;
+    --blue-glow:#2F6FFF;
+    --white:#F5F7FF;
+    --dim:#5A6178;
+    --ok:#3ED598;
+    --err:#FF5C7A;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Inter',sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important; transition-duration:.01ms !important;}
+  }
+
+  /* ambient background glow */
+  .horizon{
+    position:fixed;
+    bottom:-320px;
+    left:50%;
+    transform:translateX(-50%);
+    width:1100px;
+    height:640px;
+    pointer-events:none;
+    z-index:0;
+  }
+  .horizon .ring{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    border:2px solid rgba(80,140,255,0.35);
+    filter:blur(2px);
+  }
+  .horizon .ring.two{inset:60px; border-color:rgba(120,170,255,0.55); filter:blur(6px);}
+  .horizon .fill{
+    position:absolute;
+    inset:120px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(59,124,255,0.45), transparent 70%);
+    filter:blur(40px);
+    opacity:0.7;
+    transition:opacity .4s ease;
+  }
+  body.listening .horizon .fill{opacity:1;}
+
+  /* top bar */
+  .topbar{
+    width:100%;
+    max-width:900px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:28px 32px 0;
+    position:relative;
+    z-index:2;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 16px;
+    border-radius:100px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.03);
+    font-size:13px;
+    color:#CBD3E8;
+  }
+  .pill .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--dim);
+    transition:background .2s ease, box-shadow .2s ease;
+  }
+  .pill.status .dot.listening{background:var(--blue); box-shadow:0 0 8px var(--blue);}
+  .pill.status .dot.success{background:var(--ok); box-shadow:0 0 8px var(--ok);}
+  .pill.status .dot.error{background:var(--err); box-shadow:0 0 8px var(--err);}
+
+  /* card */
+  main{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 20px 60px;
+    position:relative;
+    z-index:2;
+    width:100%;
+  }
+  .card{
+    position:relative;
+    width:min(420px, 100%);
+    padding:36px 32px 44px;
+    border-radius:32px;
+    background:
+      radial-gradient(circle at 30% 0%, rgba(80,130,255,0.35), transparent 55%),
+      linear-gradient(165deg, var(--card-1), var(--card-2) 70%);
+    border:1px solid rgba(255,255,255,0.1);
+    box-shadow:0 40px 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size:18px 18px;
+    opacity:0.5;
+    pointer-events:none;
+  }
+
+  .close-btn{
+    position:absolute;
+    top:18px;right:18px;
+    width:32px;height:32px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.16);
+    background:rgba(255,255,255,0.06);
+    color:#CBD3E8;
+    font-size:15px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s ease, transform .15s ease;
+    z-index:3;
+  }
+  .close-btn:hover{background:rgba(255,255,255,0.14); transform:scale(1.06);}
+  .close-btn:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+
+  .transcript{
+    position:relative;
+    z-index:1;
+    min-height:88px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-family:'Inter',sans-serif;
+    font-size:19px;
+    font-weight:600;
+    line-height:1.5;
+    letter-spacing:0.01em;
+    color:var(--dim);
+    margin:4px 0 16px;
+    padding:20px 22px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.035);
+    border:1px solid rgba(255,255,255,0.07);
+  }
+  .transcript.pop{animation:textPop .25s ease;}
+  @keyframes textPop{
+    from{opacity:0; transform:translateY(5px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .transcript .said{color:#8B93AC; font-weight:500;}
+  .transcript .current{
+    color:var(--white);
+    font-weight:700;
+  }
+  .transcript .current::after{
+    content:"";
+    display:inline-block;
+    width:2px;
+    height:1em;
+    margin-left:3px;
+    background:var(--blue-soft);
+    vertical-align:-0.15em;
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  .transcript.idle{
+    font-family:'Inter',sans-serif;
+    font-size:17px;
+    font-weight:700;
+    font-style:normal;
+    letter-spacing:0.01em;
+    color:#8B93AC;
+  }
+
+  /* waveform */
+  .wave{
+    position:relative;
+    height:90px;
+    margin:12px 0 6px;
+  }
+  .wave canvas{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+
+  /* mic */
+  .mic-zone{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    margin-top:8px;
+  }
+  .mic-glow{
+    position:absolute;
+    width:180px;height:180px;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(59,124,255,0.55), transparent 70%);
+    filter:blur(18px);
+    opacity:0.5;
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  body.listening .mic-glow{opacity:1; transform:translate(-50%,-50%) scale(1.15);}
+
+  .ring{
+    position:absolute;
+    width:96px;height:96px;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%) scale(0.8);
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,0.5);
+    opacity:0;
+  }
+  body.listening .ring{animation:pulse 1.8s ease-out infinite;}
+  body.listening .ring.r2{animation-delay:.6s;}
+  body.listening .ring.r3{animation-delay:1.2s;}
+  @keyframes pulse{
+    0%{ transform:translate(-50%,-50%) scale(0.8); opacity:.6; }
+    100%{ transform:translate(-50%,-50%) scale(1.6); opacity:0; }
+  }
+
+  .mic{
+    position:relative;
+    z-index:2;
+    width:80px;height:80px;
+    border:0;
+    border-radius:50%;
+    font-size:30px;
+    cursor:pointer;
+    background:#fff;
+    color:#0B1330;
+    box-shadow:0 10px 24px rgba(0,0,0,0.4);
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mic:hover:not(:disabled){transform:scale(1.06);}
+  .mic:active:not(:disabled){transform:scale(0.95);}
+  .mic:focus-visible{outline:3px solid var(--blue-soft); outline-offset:4px;}
+  .mic:disabled{cursor:not-allowed; opacity:0.45;}
+  body.listening .mic{background:var(--blue); color:#fff;}
+
+  .hint{
+    text-align:center;
+    margin-top:22px;
+    font-size:12.5px;
+    color:#5A6178;
+  }
+
+  footer{
+    padding:0 0 28px;
+    font-size:12px;
+    color:#3E4560;
+    text-align:center;
+    line-height:1.7;
+    position:relative;
+    z-index:2;
+  }
+  footer .credit{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:var(--blue-soft);
+    letter-spacing:0.02em;
+  }
+  footer .credit a{
+    color:inherit;
+    text-decoration:none;
+    border-bottom:1px solid rgba(127,168,255,0.35);
+    transition:color .15s ease, border-color .15s ease;
+  }
+  footer .credit a:hover{
+    color:var(--white);
+    border-color:rgba(245,247,255,0.6);
+  }
+</style>
+</head>
+
+<body>
+
+<div class="horizon" aria-hidden="true">
+  <div class="ring"></div>
+  <div class="ring two"></div>
+  <div class="fill"></div>
+</div>
+
+<div class="topbar">
+  <span class="pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Sonara</span>
+  <span class="pill status"><span class="dot" id="statusDot"></span><span id="statusText">Idle</span></span>
+</div>
+
+<main>
+  <div class="card">
+    <button class="close-btn" id="closeBtn" type="button" aria-label="Reset">✕</button>
+
+    <div class="transcript idle" id="transcript">What do you want to hear?</div>
+
+    <div class="wave" aria-hidden="true">
+      <canvas id="waveCanvas"></canvas>
+    </div>
+
+    <div class="mic-zone">
+      <span class="mic-glow"></span>
+      <span class="ring r1"></span>
+      <span class="ring r2"></span>
+      <span class="ring r3"></span>
+      <button id="mic" class="mic" aria-label="Tap to speak a song title">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="hint" id="hint">Tap the mic and say “Sonara” or your song</div>
+  </div>
+</main>
+
+<footer>Powered by your voice<span class="credit">Made by Ilan · <a href="mailto:ilanabdulla18@gmail.com">ilanabdulla18@gmail.com</a></span></footer>
+
+<script>
+
+const body=
+    document.body;
+
+const transcriptEl=
+    document.getElementById("transcript");
+
+const mic=
+    document.getElementById("mic");
+
+const closeBtn=
+    document.getElementById("closeBtn");
+
+const statusDot=
+    document.getElementById("statusDot");
+
+const statusText=
+    document.getElementById("statusText");
+
+const hint=
+    document.getElementById("hint");
+
+const canvas=
+    document.getElementById("waveCanvas");
+
+const ctx2d=
+    canvas.getContext("2d");
+
+const BAR_COUNT=40;
+
+let audioCtx=null;
+let analyser=null;
+let dataArray=null;
+let micSource=null;
+let micStream=null;
+let rafId=null;
+let idlePhase=0;
+
+function resizeCanvasIfNeeded(){
+
+    const rect=
+        canvas.getBoundingClientRect();
+
+    const dpr=
+        window.devicePixelRatio || 1;
+
+    const targetW=
+        Math.max(1, Math.round(rect.width * dpr));
+
+    const targetH=
+        Math.max(1, Math.round(rect.height * dpr));
+
+    if(canvas.width !== targetW ||
+       canvas.height !== targetH){
+
+        canvas.width=targetW;
+
+        canvas.height=targetH;
+
+    }
+
+}
+
+function roundRect(x, y, w, h, r){
+
+    ctx2d.beginPath();
+
+    ctx2d.moveTo(x + r, y);
+
+    ctx2d.arcTo(x + w, y, x + w, y + h, r);
+
+    ctx2d.arcTo(x + w, y + h, x, y + h, r);
+
+    ctx2d.arcTo(x, y + h, x, y, r);
+
+    ctx2d.arcTo(x, y, x + w, y, r);
+
+    ctx2d.closePath();
+
+}
+
+function drawBars(amps){
+
+    resizeCanvasIfNeeded();
+
+    const w=canvas.width;
+    const h=canvas.height;
+
+    ctx2d.clearRect(0, 0, w, h);
+
+    const barW=w / BAR_COUNT;
+
+    for(let i=0; i < BAR_COUNT; i++){
+
+        const amp=amps[i];
+
+        const barH=
+            Math.max(h * 0.05, amp * h * 0.9);
+
+        const x=
+            i * barW + barW * 0.28;
+
+        const bw=
+            barW * 0.44;
+
+        const y=
+            (h - barH) / 2;
+
+        const grad=
+            ctx2d.createLinearGradient(0, y, 0, y + barH);
+
+        grad.addColorStop(0, "rgba(127,168,255,0.85)");
+        grad.addColorStop(0.5, "#ffffff");
+        grad.addColorStop(1, "rgba(127,168,255,0.85)");
+
+        ctx2d.fillStyle=grad;
+
+        roundRect(x, y, bw, barH, bw / 2);
+
+        ctx2d.fill();
+
+    }
+
+}
+
+function drawIdle(){
+
+    idlePhase += 0.045;
+
+    const amps=
+        new Array(BAR_COUNT);
+
+    for(let i=0; i < BAR_COUNT; i++){
+
+        amps[i]=
+            0.08 + ((Math.sin(idlePhase + i * 0.35) + 1) / 2) * 0.07;
+
+    }
+
+    drawBars(amps);
+
+    rafId=
+        requestAnimationFrame(drawIdle);
+
+}
+
+function drawListening(){
+
+    analyser.getByteTimeDomainData(dataArray);
+
+    const step=
+        Math.max(1, Math.floor(dataArray.length / BAR_COUNT));
+
+    const amps=
+        new Array(BAR_COUNT);
+
+    for(let i=0; i < BAR_COUNT; i++){
+
+        let sum=0;
+
+        for(let j=0; j < step; j++){
+
+            sum += Math.abs(dataArray[i * step + j] - 128);
+
+        }
+
+        const avg=sum / step;
+
+        amps[i]=
+            Math.min(1, avg / 34);
+
+    }
+
+    drawBars(amps);
+
+    rafId=
+        requestAnimationFrame(drawListening);
+
+}
+
+function stopLoop(){
+
+    if(rafId)
+        cancelAnimationFrame(rafId);
+
+}
+
+async function startAudioVisual(){
+
+    try{
+
+        if(!audioCtx){
+
+            audioCtx=
+                new (window.AudioContext || window.webkitAudioContext)();
+
+        }
+
+        if(audioCtx.state === "suspended")
+            await audioCtx.resume();
+
+        if(!micStream){
+
+            micStream=
+                await navigator.mediaDevices.getUserMedia({audio:true});
+
+        }
+
+        if(!analyser){
+
+            analyser=
+                audioCtx.createAnalyser();
+
+            analyser.fftSize=1024;
+
+            dataArray=
+                new Uint8Array(analyser.fftSize);
+
+            micSource=
+                audioCtx.createMediaStreamSource(micStream);
+
+            micSource.connect(analyser);
+
+        }
+
+        stopLoop();
+
+        rafId=
+            requestAnimationFrame(drawListening);
+
+    }catch(err){
+
+        console.log("Mic visualizer unavailable, falling back to idle animation.", err);
+
+    }
+
+}
+
+function stopAudioVisual(){
+
+    stopLoop();
+
+    rafId=
+        requestAnimationFrame(drawIdle);
+
+}
+
+function releaseMicStream(){
+
+    if(micStream){
+
+        micStream.getTracks().forEach((t)=>t.stop());
+
+        micStream=null;
+
+    }
+
+    if(micSource){
+
+        micSource.disconnect();
+
+        micSource=null;
+
+    }
+
+    analyser=null;
+
+}
+
+function playTone(freq, duration){
+
+    try{
+
+        if(!audioCtx){
+
+            audioCtx=
+                new (window.AudioContext || window.webkitAudioContext)();
+
+        }
+
+        if(audioCtx.state === "suspended")
+            audioCtx.resume();
+
+        const t0=
+            audioCtx.currentTime;
+
+        const osc=
+            audioCtx.createOscillator();
+
+        const gain=
+            audioCtx.createGain();
+
+        osc.type="sine";
+
+        osc.frequency.setValueAtTime(freq, t0);
+
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.22, t0 + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+
+        osc.connect(gain).connect(audioCtx.destination);
+
+        osc.start(t0);
+        osc.stop(t0 + duration + 0.02);
+
+    }catch(e){
+
+        console.log("Click tone unavailable", e);
+
+    }
+
+}
+
+window.addEventListener("resize", resizeCanvasIfNeeded);
+
+resizeCanvasIfNeeded();
+
+rafId=
+    requestAnimationFrame(drawIdle);
+
+const SpeechRecognition=
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+let youtubeTab=null;
+let listening=false;
+let cancelled=false;
+let awaitingFollowup=false;
+
+const IDLE_PROMPT=
+    "What do you want to hear?";
+
+function isJustWakeWord(text){
+
+    const cleaned=
+        text.replace(/[^a-z\s]/gi, "").trim().toLowerCase();
+
+    return cleaned === "sonara" ||
+           cleaned === "hey sonara";
+
+}
+
+function stripWakeWord(text){
+
+    return text.replace(
+        /^\s*(hey\s+)?sonara\b[,!.]?\s*/i,
+        ""
+    ).trim();
+
+}
+
+function setStatus(text, kind){
+
+    statusText.textContent=text;
+
+    statusDot.className=
+        "dot" + (kind ? " " + kind : "");
+
+}
+
+function setListening(isListening){
+
+    listening=isListening;
+
+    body.classList.toggle("listening", isListening);
+
+}
+
+function showIdlePrompt(){
+
+    transcriptEl.classList.add("idle");
+
+    transcriptEl.textContent=IDLE_PROMPT;
+
+}
+
+function renderTranscript(text){
+
+    transcriptEl.classList.remove("idle");
+
+    const words=
+        text.split(" ").filter(Boolean);
+
+    if(words.length === 0){
+
+        transcriptEl.textContent="";
+
+        return;
+
+    }
+
+    const last=
+        words.pop();
+
+    transcriptEl.innerHTML=
+        (words.length ? '<span class="said">' + words.join(" ") + " </span>" : "") +
+        '<span class="current">' + last + "</span>";
+
+    transcriptEl.classList.remove("pop");
+
+    void transcriptEl.offsetWidth;
+
+    transcriptEl.classList.add("pop");
+
+}
+
+function resetAll(){
+
+    if(listening){
+
+        cancelled=true;
+
+        try{
+            recognitionInstance && recognitionInstance.abort();
+        }catch(e){}
+
+    }
+
+    setListening(false);
+
+    stopAudioVisual();
+
+    releaseMicStream();
+
+    setStatus("Idle");
+
+    showIdlePrompt();
+
+    hint.textContent=
+        "Tap the mic and say \u201cSonara\u201d or your song";
+
+}
+
+let recognitionInstance=null;
+
+if(!SpeechRecognition){
+
+    setStatus("Unavailable", "error");
+
+    mic.disabled=true;
+
+    hint.textContent=
+        "Speech recognition isn't supported in this browser";
+
+}else{
+
+    const recognition=
+        new SpeechRecognition();
+
+    recognitionInstance=recognition;
+
+    recognition.lang="en-US";
+    recognition.continuous=false;
+    recognition.interimResults=true;
+
+    recognition.onstart=()=>{
+
+        cancelled=false;
+
+        setListening(true);
+
+        setStatus("Listening", "listening");
+
+        hint.textContent=
+            "Tap the mic again to stop";
+
+        transcriptEl.classList.remove("idle");
+
+        transcriptEl.textContent="";
+
+        startAudioVisual();
+
+    };
+
+    recognition.onend=()=>{
+
+        setListening(false);
+
+        stopAudioVisual();
+
+        if(awaitingFollowup){
+
+            awaitingFollowup=false;
+
+            try{
+                recognition.start();
+            }catch(e){}
+
+            return;
+
+        }
+
+        if(cancelled){
+
+            setStatus("Cancelled");
+
+            hint.textContent=
+                "Tap the mic and say \u201cSonara\u201d or your song";
+
+            showIdlePrompt();
+
+            cancelled=false;
+
+        }
+
+    };
+
+    recognition.onerror=(event)=>{
+
+        setListening(false);
+
+        stopAudioVisual();
+
+        awaitingFollowup=false;
+
+        if(cancelled ||
+           event.error === "aborted"){
+
+            setStatus("Cancelled");
+
+            showIdlePrompt();
+
+            cancelled=false;
+
+        }else{
+
+            setStatus("Didn't catch that", "error");
+
+            hint.textContent=
+                "Try tapping the mic again";
+
+        }
+
+    };
+
+    recognition.onresult=async(event)=>{
+
+        const result=
+            event.results[event.results.length - 1];
+
+        const text=
+            result[0].transcript.trim();
+
+        renderTranscript(text);
+
+        if(!result.isFinal)
+            return;
+
+        if(!text){
+
+            setStatus("No song detected", "error");
+
+            showIdlePrompt();
+
+            return;
+
+        }
+
+        if(isJustWakeWord(text)){
+
+            setStatus("Yes? I'm listening", "listening");
+
+            hint.textContent=
+                "Say a song title";
+
+            transcriptEl.classList.remove("idle");
+
+            transcriptEl.innerHTML=
+                '<span class="current">Yes? Go ahead\u2026</span>';
+
+            transcriptEl.classList.remove("pop");
+
+            void transcriptEl.offsetWidth;
+
+            transcriptEl.classList.add("pop");
+
+            awaitingFollowup=true;
+
+            try{
+                recognition.stop();
+            }catch(e){}
+
+            return;
+
+        }
+
+        const command=
+            stripWakeWord(text);
+
+        if(!command){
+
+            setStatus("No song detected", "error");
+
+            showIdlePrompt();
+
+            return;
+
+        }
+
+        setStatus("Finding song...", "listening");
+
+        hint.textContent=
+            "Hang tight...";
+
+        try{
+
+            const response=
+                await fetch(
+                    "/youtube/play",
+                    {
+                        method:"POST",
+
+                        headers:{
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:JSON.stringify({
+                            command:command
+                        })
+                    }
+                );
+
+            const data=
+                await response.json();
+
+            if(!data.success){
+
+                setStatus(
+                    data.message || "Song not found",
+                    "error"
+                );
+
+                hint.textContent=
+                    "Tap the mic to try again";
+
+                return;
+
+            }
+
+            if(!youtubeTab ||
+               youtubeTab.closed){
+
+                youtubeTab=
+                    window.open(
+                        data.url,
+                        "NovaYouTube"
+                    );
+
+            }else{
+
+                youtubeTab.location.href=
+                    data.url;
+
+                youtubeTab.focus();
+
+            }
+
+            setStatus("Now playing", "success");
+
+            hint.textContent=
+                "Tap the mic to search again";
+
+        }catch(error){
+
+            console.error(error);
+
+            setStatus("Connection failed", "error");
+
+            hint.textContent=
+                "Check your connection and try again";
+
+        }
+
+    };
+
+    mic.onclick=()=>{
+
+        if(listening){
+
+            cancelled=true;
+
+            recognition.abort();
+
+            playTone(440, 0.1);
+
+            return;
+
+        }
+
+        playTone(880, 0.09);
+
+        try{
+
+            recognition.start();
+
+        }catch(error){
+
+            console.log(error);
+
+        }
+
+    };
+
+}
+
+closeBtn.onclick=resetAll;
+
+</script>
+
+</body>
+</html>
