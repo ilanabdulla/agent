@@ -89,3 +89,5 @@ User command:
 
     except Exception:
             if attempt ==3:
+                raise
+            time.sleep(1)
