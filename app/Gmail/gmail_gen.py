@@ -18,10 +18,19 @@ def generate_email_with_gemini(command):
 
   Conver the user's voice command into a professional email.
 
-  rules:
+rules:
   - Do not copy the command literally.
   - Do not explain anything.
   - Do not invent names, dates, prices, comapnies, attachments, or facts.
   - Keep the email natural and concise.
   - Include an appropriate greeting and closing.
-  
+
+Output exactly:
+
+SUBJECT : <subject>
+BODY :
+<email body>
+
+User command:
+{command}
+"""
