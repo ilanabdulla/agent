@@ -87,5 +87,5 @@ User command:
 
         time.sleep((2 ** attempt) + random.random())
 
-        except Exception:
+    except Exception:
             if attempt ==3:
