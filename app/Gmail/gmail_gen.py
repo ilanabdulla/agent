@@ -34,3 +34,34 @@ BODY :
 User command:
 {command}
 """
+
+    url = (
+        f"https://generativelanguage.googleapis.com/"
+        f"vibeta/models/{MODEL}:generateContent"
+    
+    )
+    payload = {
+        "contents":[{"parts":[{"text":prompt}]}],
+        "generationalConfig": {
+            "temperature":0.7,
+            "maxOutputTokens": 800
+        }
+    }
+
+    req = urllib.request.Request(
+        url,
+        data=json.dump(payload).encode(),
+        headers=(
+            "content-type": "application/json"
+            "x-goog-api-key": API-KEY
+        },
+        method="POST"
+    )
+
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req,timeout=30)as response:
+                data = json.loads(response.read().decode())
+        
+        
+        
