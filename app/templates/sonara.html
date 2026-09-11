@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+>
+
+<title>Sonara</title>
+
+
+<link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+>
+
+<link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+
+<style>
+
+:root{
+
+    --bg:#05070E;
+
+    --card-1:#101a3d;
+
+    --card-2:#060912;
+
+    --blue:#3B7CFF;
+
+    --blue-soft:#7FA8FF;
+
+    --blue-glow:#2F6FFF;
+
+    --white:#F5F7FF;
+
+    --dim:#5A6178;
+
+    --ok:#3ED598;
+
+    --err:#FF5C7A;
+
+}
+
+
+*{
+
+    box-sizing:border-box;
+
+}
+
+
+html,
+body{
+
+    height:100%;
+
+}
+
+
+body{
+
+    margin:0;
+
+    min-height:100vh;
+
+    background:var(--bg);
+
+    color:var(--white);
+
+    font-family:'Inter',sans-serif;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    overflow-x:hidden;
+
+    position:relative;
+
+}
+
+
+@media (prefers-reduced-motion: reduce){
+
+    *{
+
+        animation-duration:.01ms !important;
+
+        transition-duration:.01ms !important;
+
+    }
+
+}
+
+
+/* ambient background glow */
+
+.horizon{
+
+    position:fixed;
+
+    bottom:-320px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    width:1100px;
+
+    height:640px;
+
+    pointer-events:none;
+
+    z-index:0;
+
+}
+
+.horizon .ring{
+
+    position:absolute;
+
+    inset:0;
+
+    border-radius:50%;
+
+    border:2px solid rgba(80,140,255,0.35);
+
+    filter:blur(2px);
+
+}
+
+.horizon .ring.two{
+
+    inset:60px;
+
+    border-color:rgba(120,170,255,0.55);
+
+    filter:blur(6px);
+
+}
+
+.horizon .fill{
+
+    position:absolute;
+
+    inset:120px;
+
+    border-radius:50%;
+
+    background:radial-gradient(circle, rgba(59,124,255,0.45), transparent 70%);
+
+    filter:blur(40px);
+
+    opacity:0.7;
+
+    transition:opacity .4s ease;
+
+}
+
+body.listening .horizon .fill{
+
+    opacity:1;
+
+}
+
+
+/* top bar */
+
+.topbar{
+
+    width:100%;
+
+    max-width:900px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:28px 32px 0;
+
+    position:relative;
+
+    z-index:2;
+
+}
+
+.pill{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:9px 16px;
+
+    border-radius:100px;
+
+    border:1px solid rgba(255,255,255,0.14);
+
+    background:rgba(255,255,255,0.03);
+
+    font-size:13px;
+
+    color:#CBD3E8;
+
+}
+
+.pill .dot{
+
+    width:8px;
+
+    height:8px;
+
+    border-radius:50%;
+
+    background:var(--dim);
+
+    transition:background .2s ease, box-shadow .2s ease;
+
+}
+
+.pill.status .dot.listening{
+
+    background:var(--blue);
+
+    box-shadow:0 0 8px var(--blue);
+
+}
+
+.pill.status .dot.success{
+
+    background:var(--ok);
+
+    box-shadow:0 0 8px var(--ok);
+
+}
+
+.pill.status .dot.error{
+
+    background:var(--err);
+
+    box-shadow:0 0 8px var(--err);
+
+}
+
+
+/* card */
+
+main{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:40px 20px 60px;
+
+    position:relative;
+
+    z-index:2;
+
+    width:100%;
+
+}
+
+.card{
+
+    position:relative;
+
+    width:min(440px, 100%);
+
+    padding:36px 32px 44px;
+
+    border-radius:32px;
+
+    background:
+        radial-gradient(circle at 30% 0%, rgba(80,130,255,0.35), transparent 55%),
+        linear-gradient(165deg, var(--card-1), var(--card-2) 70%);
+
+    border:1px solid rgba(255,255,255,0.1);
+
+    box-shadow:0 40px 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+
+    overflow:hidden;
+
+}
+
+.card::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background-image:radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+
+    background-size:18px 18px;
+
+    opacity:0.5;
+
+    pointer-events:none;
+
+}
+
+
+.close-btn{
+
+    position:absolute;
+
+    top:18px;
+
+    right:18px;
+
+    width:32px;
+
+    height:32px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(255,255,255,0.16);
+
+    background:rgba(255,255,255,0.06);
+
+    color:#CBD3E8;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    transition:background .15s ease, transform .15s ease;
+
+    z-index:3;
+
+}
+
+.close-btn:hover{
+
+    background:rgba(255,255,255,0.14);
+
+    transform:scale(1.06);
+
+}
+
+.close-btn:focus-visible{
+
+    outline:2px solid var(--blue);
+
+    outline-offset:2px;
+
+}
+
+
+.transcript{
+
+    position:relative;
+
+    z-index:1;
+
+    min-height:88px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    text-align:center;
+
+    font-family:'Inter',sans-serif;
+
+    font-size:19px;
+
+    font-weight:600;
+
+    line-height:1.5;
+
+    letter-spacing:0.01em;
+
+    color:var(--dim);
+
+    margin:4px 0 16px;
+
+    padding:20px 22px;
+
+    border-radius:20px;
+
+    background:rgba(255,255,255,0.035);
+
+    border:1px solid rgba(255,255,255,0.07);
+
+}
+
+.transcript.pop{
+
+    animation:textPop .25s ease;
+
+}
+
+@keyframes textPop{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(5px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+.transcript .said{
+
+    color:#8B93AC;
+
+    font-weight:500;
+
+}
+
+.transcript .current{
+
+    color:var(--white);
+
+    font-weight:700;
+
+}
+
+.transcript .current::after{
+
+    content:"";
+
+    display:inline-block;
+
+    width:2px;
+
+    height:1em;
+
+    margin-left:3px;
+
+    background:var(--blue-soft);
+
+    vertical-align:-0.15em;
+
+    animation:blink 1s steps(1) infinite;
+
+}
+
+@keyframes blink{
+
+    50%{
+
+        opacity:0;
+
+    }
+
+}
+
+.transcript.idle{
+
+    font-family:'Inter',sans-serif;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    font-style:normal;
+
+    letter-spacing:0.01em;
+
+    color:#8B93AC;
+
+}
+
+
+/* waveform */
+
+.wave{
+
+    position:relative;
+
+    height:90px;
+
+    margin:12px 0 6px;
+
+}
+
+.wave canvas{
+
+    width:100%;
+
+    height:100%;
+
+    display:block;
+
+}
+
+
+/* mic */
+
+.mic-zone{
+
+    position:relative;
+
+    display:flex;
+
+    justify-content:center;
+
+    margin-top:8px;
+
+}
+
+.mic-glow{
+
+    position:absolute;
+
+    width:180px;
+
+    height:180px;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    border-radius:50%;
+
+    background:radial-gradient(circle, rgba(59,124,255,0.55), transparent 70%);
+
+    filter:blur(18px);
+
+    opacity:0.5;
+
+    transition:opacity .3s ease, transform .3s ease;
+
+}
+
+body.listening .mic-glow{
+
+    opacity:1;
+
+    transform:translate(-50%,-50%) scale(1.15);
+
+}
+
+
+.ring{
+
+    position:absolute;
+
+    width:96px;
+
+    height:96px;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%,-50%) scale(0.8);
+
+    border-radius:50%;
+
+    border:2px solid rgba(255,255,255,0.5);
+
+    opacity:0;
+
+}
+
+body.listening .ring{
+
+    animation:pulse 1.8s ease-out infinite;
+
+}
+
+body.listening .ring.r2{
+
+    animation-delay:.6s;
+
+}
+
+body.listening .ring.r3{
+
+    animation-delay:1.2s;
+
+}
+
+@keyframes pulse{
+
+    0%{
+
+        transform:translate(-50%,-50%) scale(0.8);
+
+        opacity:.6;
+
+    }
+
+    100%{
+
+        transform:translate(-50%,-50%) scale(1.6);
+
+        opacity:0;
+
+    }
+
+}
+
+
+.mic{
+
+    position:relative;
+
+    z-index:2;
+
+    width:80px;
+
+    height:80px;
+
+    border:0;
+
+    border-radius:50%;
+
+    font-size:30px;
+
+    cursor:pointer;
+
+    background:#fff;
+
+    color:#0B1330;
+
+    box-shadow:0 10px 24px rgba(0,0,0,0.4);
+
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+.mic:hover:not(:disabled){
+
+    transform:scale(1.06);
+
+}
+
+.mic:active:not(:disabled){
+
+    transform:scale(0.95);
+
+}
+
+.mic:focus-visible{
+
+    outline:3px solid var(--blue-soft);
+
+    outline-offset:4px;
+
+}
+
+.mic:disabled{
+
+    cursor:not-allowed;
+
+    opacity:0.45;
+
+}
+
+body.listening .mic{
+
+    background:var(--blue);
+
+    color:#fff;
+
+}
+
+
+.hint{
+
+    text-align:center;
+
+    margin-top:22px;
+
+    font-size:12.5px;
+
+    color:#5A6178;
+
+}
+
+
+.examples{
+
+    display:flex;
+
+    justify-content:center;
+
+    flex-wrap:wrap;
+
+    gap:8px;
+
+    margin-top:14px;
+
+    opacity:1;
+
+    max-height:40px;
+
+    transition:opacity .2s ease, max-height .2s ease, margin .2s ease;
+
+}
+
+.examples.hide{
+
+    opacity:0;
+
+    max-height:0;
+
+    margin-top:0;
+
+    pointer-events:none;
+
+    overflow:hidden;
+
+}
+
+.examples .chip{
+
+    font-size:11.5px;
+
+    font-weight:500;
+
+    color:#7B84A0;
+
+    background:rgba(255,255,255,0.04);
+
+    border:1px solid rgba(255,255,255,0.09);
+
+    padding:6px 12px;
+
+    border-radius:100px;
+
+    white-space:nowrap;
+
+}
+
+
+/* recently played */
+
+.recent{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    justify-content:center;
+
+    gap:8px;
+
+    margin-top:16px;
+
+}
+
+.recent:empty{
+
+    display:none;
+
+}
+
+.recent .recent-chip{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    font-size:12px;
+
+    font-weight:500;
+
+    color:#B7C0DE;
+
+    background:rgba(127,168,255,0.08);
+
+    border:1px solid rgba(127,168,255,0.18);
+
+    padding:6px 12px 6px 10px;
+
+    border-radius:100px;
+
+    cursor:pointer;
+
+    max-width:180px;
+
+    transition:background .15s ease, border-color .15s ease;
+
+}
+
+.recent .recent-chip:hover{
+
+    background:rgba(127,168,255,0.16);
+
+    border-color:rgba(127,168,255,0.32);
+
+}
+
+.recent .recent-chip svg{
+
+    flex-shrink:0;
+
+    opacity:0.7;
+
+}
+
+.recent .recent-chip span{
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
+}
+
+
+/* email editor */
+
+.editor{
+
+    display:none;
+
+    margin-top:26px;
+
+    text-align:left;
+
+    border-top:1px solid rgba(255,255,255,0.08);
+
+    padding-top:24px;
+
+    opacity:0;
+
+    transform:translateY(8px);
+
+    transition:opacity .3s ease, transform .3s ease;
+
+}
+
+.editor.open{
+
+    opacity:1;
+
+    transform:translateY(0);
+
+}
+
+.editor .editor-head{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    margin-bottom:16px;
+
+}
+
+.editor .editor-head svg{
+
+    color:var(--blue-soft);
+
+    flex-shrink:0;
+
+}
+
+.editor .editor-title{
+
+    font-size:13px;
+
+    font-weight:600;
+
+    color:var(--white);
+
+    letter-spacing:0.01em;
+
+}
+
+.editor .recipient{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    color:#B7C0DE;
+
+    font-size:13px;
+
+    background:rgba(127,168,255,0.1);
+
+    border:1px solid rgba(127,168,255,0.2);
+
+    padding:6px 12px;
+
+    border-radius:100px;
+
+    margin-bottom:16px;
+
+}
+
+.editor label{
+
+    display:block;
+
+    font-size:11.5px;
+
+    font-weight:600;
+
+    color:#6C7593;
+
+    letter-spacing:0.03em;
+
+    margin:14px 0 6px;
+
+}
+
+.editor label:first-of-type{
+
+    margin-top:0;
+
+}
+
+.editor input,
+.editor textarea{
+
+    width:100%;
+
+    padding:12px 14px;
+
+    box-sizing:border-box;
+
+    background:rgba(255,255,255,0.04);
+
+    color:var(--white);
+
+    border:1px solid rgba(255,255,255,0.12);
+
+    border-radius:12px;
+
+    font-family:'Inter',sans-serif;
+
+    font-size:14px;
+
+    transition:border-color .15s ease, background .15s ease;
+
+}
+
+.editor input:hover,
+.editor textarea:hover{
+
+    border-color:rgba(255,255,255,0.2);
+
+}
+
+.editor input:focus,
+.editor textarea:focus{
+
+    outline:none;
+
+    border-color:var(--blue);
+
+    background:rgba(255,255,255,0.06);
+
+}
+
+.editor textarea{
+
+    height:130px;
+
+    resize:vertical;
+
+    line-height:1.55;
+
+}
+
+.editor .actions{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-top:18px;
+
+}
+
+button.action{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    padding:11px 18px;
+
+    border:0;
+
+    border-radius:100px;
+
+    cursor:pointer;
+
+    font-family:'Inter',sans-serif;
+
+    font-size:13.5px;
+
+    font-weight:600;
+
+    transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
+
+}
+
+button.action:hover{
+
+    transform:translateY(-1px);
+
+}
+
+button.action:focus-visible{
+
+    outline:2px solid var(--blue-soft);
+
+    outline-offset:2px;
+
+}
+
+button.action.primary{
+
+    background:var(--blue);
+
+    color:#fff;
+
+    box-shadow:0 6px 18px rgba(59,124,255,0.35);
+
+}
+
+button.action.primary:hover{
+
+    box-shadow:0 8px 22px rgba(59,124,255,0.45);
+
+}
+
+button.action.ghost{
+
+    background:rgba(255,255,255,0.06);
+
+    color:var(--white);
+
+    border:1px solid rgba(255,255,255,0.14);
+
+}
+
+button.action.ghost:hover{
+
+    background:rgba(255,255,255,0.1);
+
+}
+
+
+footer{
+
+    padding:0 0 28px;
+
+    font-size:12px;
+
+    color:#3E4560;
+
+    text-align:center;
+
+    line-height:1.7;
+
+    position:relative;
+
+    z-index:2;
+
+}
+
+footer .credit{
+
+    display:block;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    color:var(--blue-soft);
+
+    letter-spacing:0.02em;
+
+}
+
+footer .credit a{
+
+    color:inherit;
+
+    text-decoration:none;
+
+    border-bottom:1px solid rgba(127,168,255,0.35);
+
+    transition:color .15s ease, border-color .15s ease;
+
+}
+
+footer .credit a:hover{
+
+    color:var(--white);
+
+    border-color:rgba(245,247,255,0.6);
+
+}
+
+
+/* mobile */
+
+@media (max-width:480px){
+
+    .topbar{
+
+        padding:20px 18px 0;
+
+    }
+
+    .pill{
+
+        font-size:12px;
+
+        padding:7px 12px;
+
+    }
+
+    main{
+
+        padding:28px 14px 44px;
+
+    }
+
+    .card{
+
+        padding:28px 20px 34px;
+
+        border-radius:26px;
+
+    }
+
+    .transcript{
+
+        font-size:17px;
+
+        padding:16px 16px;
+
+    }
+
+    .mic{
+
+        width:74px;
+
+        height:74px;
+
+    }
+
+    .editor .actions{
+
+        flex-wrap:wrap;
+
+    }
+
+    button.action{
+
+        flex:1 1 auto;
+
+        justify-content:center;
+
+    }
+
+    .recent .recent-chip{
+
+        max-width:140px;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div
+    class="horizon"
+    aria-hidden="true"
+>
+
+    <div class="ring"></div>
+
+    <div class="ring two"></div>
+
+    <div class="fill"></div>
+
+</div>
+
+
+<div class="topbar">
+
+    <span class="pill">
+
+        <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+
+        Sonara
+
+    </span>
+
+    <span class="pill status">
+
+        <span
+            class="dot"
+            id="statusDot"
+        ></span>
+
+        <span id="statusText">Idle</span>
+
+    </span>
+
+</div>
+
+
+<main>
+
+    <div class="card">
+
+        <button
+            class="close-btn"
+            id="closeBtn"
+            type="button"
+            aria-label="Reset"
+        >
+            ✕
+        </button>
+
+
+        <div
+            class="transcript idle"
+            id="transcript"
+        >
+            What do you want to hear?
+        </div>
+
+
+        <div
+            class="wave"
+            aria-hidden="true"
+        >
+            <canvas id="waveCanvas"></canvas>
+        </div>
+
+
+        <div class="mic-zone">
+
+            <span class="mic-glow"></span>
+
+            <span class="ring r1"></span>
+
+            <span class="ring r2"></span>
+
+            <span class="ring r3"></span>
+
+            <button
+                id="mic"
+                class="mic"
+                aria-label="Tap to speak a song title or email command"
+            >
+                <svg
+                    width="30"
+                    height="30"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+            </button>
+
+        </div>
+
+
+        <div
+            class="hint"
+            id="hint"
+        >
+            Tap the mic to speak
+        </div>
+
+        <div
+            class="examples"
+            id="examples"
+        >
+            <span class="chip">Song title</span>
+
+            <span class="chip">Create an email</span>
+
+            <span class="chip">Say "Sonara"</span>
+        </div>
+
+
+        <!-- Recently played -->
+
+        <div
+            class="recent"
+            id="recent"
+        ></div>
+
+
+        <!-- Gmail Editor -->
+
+        <div
+            id="editor"
+            class="editor"
+        >
+
+            <div class="editor-head">
+
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M4 4h16v16H4z"/>
+                    <path d="M4 6l8 7 8-7"/>
+                </svg>
+
+                <span class="editor-title">Email draft</span>
+
+            </div>
+
+            <div
+                id="recipient"
+                class="recipient"
+            ></div>
+
+            <label for="subject">Subject</label>
+
+            <input
+                id="subject"
+                placeholder="Email subject"
+            >
+
+            <label for="body">Message</label>
+
+            <textarea
+                id="body"
+                placeholder="Email body"
+            ></textarea>
+
+            <div class="actions">
+
+                <button
+                    id="open"
+                    class="action primary"
+                >
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M5 12h14M13 6l6 6-6 6"/>
+                    </svg>
+                    Open in Gmail
+                </button>
+
+                <button
+                    id="regen"
+                    class="action ghost"
+                >
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M4 4v5h5M20 20v-5h-5"/>
+                        <path d="M4 9a8 8 0 0114-4.9M20 15a8 8 0 01-14 4.9"/>
+                    </svg>
+                    Regenerate
+                </button>
+
+                <button
+                    id="copyEmail"
+                    class="action ghost"
+                >
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <rect x="9" y="9" width="12" height="12" rx="2"/>
+                        <path d="M5 15V5a2 2 0 012-2h10"/>
+                    </svg>
+                    Copy
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<footer>
+
+    Powered by your voice
+
+    <span class="credit">
+        Made by Ilan · <a href="mailto:ilanabdulla18@gmail.com">ilanabdulla18@gmail.com</a>
+    </span>
+
+</footer>
+
+<script>
+
+
+// --------------------------------------------------
+// DOM REFERENCES
+// --------------------------------------------------
+
+const $ =
+    id => document.getElementById(id);
+
+
+const body =
+    document.body;
+
+
+const transcriptEl =
+    $("transcript");
+
+
+const mic =
+    $("mic");
+
+
+const closeBtn =
+    $("closeBtn");
+
+
+const statusDot =
+    $("statusDot");
+
+
+const statusText =
+    $("statusText");
+
+
+const hint =
+    $("hint");
+
+
+const examples =
+    $("examples");
+
+
+const canvas =
+    $("waveCanvas");
+
+
+const ctx2d =
+    canvas.getContext("2d");
+
+
+const editor =
+    $("editor");
+
+
+const recipient =
+    $("recipient");
+
+
+const subject =
+    $("subject");
+
+
+const emailBody =
+    $("body");
+
+
+const recent =
+    $("recent");
+
+
+
+// --------------------------------------------------
+// WAVEFORM STATE
+// --------------------------------------------------
+
+const BAR_COUNT = 40;
+
+
+let audioCtx = null;
+
+let analyser = null;
+
+let dataArray = null;
+
+let micSource = null;
+
+let micStream = null;
+
+let rafId = null;
+
+let idlePhase = 0;
+
+
+
+// --------------------------------------------------
+// WAVEFORM RENDERING
+// --------------------------------------------------
+
+function resizeCanvasIfNeeded(){
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const dpr =
+        window.devicePixelRatio || 1;
+
+    const targetW =
+        Math.max(1, Math.round(rect.width * dpr));
+
+    const targetH =
+        Math.max(1, Math.round(rect.height * dpr));
+
+    if(
+        canvas.width !== targetW ||
+        canvas.height !== targetH
+    ){
+
+        canvas.width = targetW;
+
+        canvas.height = targetH;
+
+    }
+
+}
+
+
+function roundRect(x, y, w, h, r){
+
+    ctx2d.beginPath();
+
+    ctx2d.moveTo(x + r, y);
+
+    ctx2d.arcTo(x + w, y, x + w, y + h, r);
+
+    ctx2d.arcTo(x + w, y + h, x, y + h, r);
+
+    ctx2d.arcTo(x, y + h, x, y, r);
+
+    ctx2d.arcTo(x, y, x + w, y, r);
+
+    ctx2d.closePath();
+
+}
+
+
+function drawBars(amps){
+
+    resizeCanvasIfNeeded();
+
+    const w = canvas.width;
+
+    const h = canvas.height;
+
+    ctx2d.clearRect(0, 0, w, h);
+
+    const barW = w / BAR_COUNT;
+
+    for(let i = 0; i < BAR_COUNT; i++){
+
+        const amp = amps[i];
+
+        const barH =
+            Math.max(h * 0.05, amp * h * 0.9);
+
+        const x =
+            i * barW + barW * 0.28;
+
+        const bw =
+            barW * 0.44;
+
+        const y =
+            (h - barH) / 2;
+
+        const grad =
+            ctx2d.createLinearGradient(0, y, 0, y + barH);
+
+        grad.addColorStop(0, "rgba(127,168,255,0.85)");
+
+        grad.addColorStop(0.5, "#ffffff");
+
+        grad.addColorStop(1, "rgba(127,168,255,0.85)");
+
+        ctx2d.fillStyle = grad;
+
+        roundRect(x, y, bw, barH, bw / 2);
+
+        ctx2d.fill();
+
+    }
+
+}
+
+
+function drawIdle(){
+
+    idlePhase += 0.045;
+
+    const amps =
+        new Array(BAR_COUNT);
+
+    for(let i = 0; i < BAR_COUNT; i++){
+
+        amps[i] =
+            0.08 + ((Math.sin(idlePhase + i * 0.35) + 1) / 2) * 0.07;
+
+    }
+
+    drawBars(amps);
+
+    rafId =
+        requestAnimationFrame(drawIdle);
+
+}
+
+
+function drawListening(){
+
+    analyser.getByteTimeDomainData(dataArray);
+
+    const step =
+        Math.max(1, Math.floor(dataArray.length / BAR_COUNT));
+
+    const amps =
+        new Array(BAR_COUNT);
+
+    for(let i = 0; i < BAR_COUNT; i++){
+
+        let sum = 0;
+
+        for(let j = 0; j < step; j++){
+
+            sum += Math.abs(dataArray[i * step + j] - 128);
+
+        }
+
+        const avg = sum / step;
+
+        amps[i] =
+            Math.min(1, avg / 34);
+
+    }
+
+    drawBars(amps);
+
+    rafId =
+        requestAnimationFrame(drawListening);
+
+}
+
+
+function stopLoop(){
+
+    if(rafId)
+        cancelAnimationFrame(rafId);
+
+}
+
+
+async function startAudioVisual(){
+
+    try{
+
+        if(!audioCtx){
+
+            audioCtx =
+                new (window.AudioContext || window.webkitAudioContext)();
+
+        }
+
+        if(audioCtx.state === "suspended")
+            await audioCtx.resume();
+
+        if(!micStream){
+
+            micStream =
+                await navigator.mediaDevices.getUserMedia({audio:true});
+
+        }
+
+        if(!analyser){
+
+            analyser =
+                audioCtx.createAnalyser();
+
+            analyser.fftSize = 1024;
+
+            dataArray =
+                new Uint8Array(analyser.fftSize);
+
+            micSource =
+                audioCtx.createMediaStreamSource(micStream);
+
+            micSource.connect(analyser);
+
+        }
+
+        stopLoop();
+
+        rafId =
+            requestAnimationFrame(drawListening);
+
+    }
+    catch(err){
+
+        console.log("Mic visualizer unavailable, falling back to idle animation.", err);
+
+    }
+
+}
+
+
+function stopAudioVisual(){
+
+    stopLoop();
+
+    rafId =
+        requestAnimationFrame(drawIdle);
+
+}
+
+
+function releaseMicStream(){
+
+    if(micStream){
+
+        micStream.getTracks().forEach(t => t.stop());
+
+        micStream = null;
+
+    }
+
+    if(micSource){
+
+        micSource.disconnect();
+
+        micSource = null;
+
+    }
+
+    analyser = null;
+
+}
+
+
+
+// --------------------------------------------------
+// SOUND + SPEECH FEEDBACK
+// --------------------------------------------------
+
+function playTone(freq, duration){
+
+    try{
+
+        if(!audioCtx){
+
+            audioCtx =
+                new (window.AudioContext || window.webkitAudioContext)();
+
+        }
+
+        if(audioCtx.state === "suspended")
+            audioCtx.resume();
+
+        const t0 =
+            audioCtx.currentTime;
+
+        const osc =
+            audioCtx.createOscillator();
+
+        const gain =
+            audioCtx.createGain();
+
+        osc.type = "sine";
+
+        osc.frequency.setValueAtTime(freq, t0);
+
+        gain.gain.setValueAtTime(0.0001, t0);
+
+        gain.gain.exponentialRampToValueAtTime(0.22, t0 + 0.012);
+
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+
+        osc.connect(gain).connect(audioCtx.destination);
+
+        osc.start(t0);
+
+        osc.stop(t0 + duration + 0.02);
+
+    }
+    catch(e){
+
+        console.log("Click tone unavailable", e);
+
+    }
+
+}
+
+
+function speak(text){
+
+    try{
+
+        if(!("speechSynthesis" in window))
+            return;
+
+        window.speechSynthesis.cancel();
+
+        const utter =
+            new SpeechSynthesisUtterance(text);
+
+        utter.rate = 1;
+
+        utter.pitch = 1;
+
+        window.speechSynthesis.speak(utter);
+
+    }
+    catch(e){
+
+        console.log("Speech synthesis unavailable", e);
+
+    }
+
+}
+
+
+window.addEventListener("resize", resizeCanvasIfNeeded);
+
+resizeCanvasIfNeeded();
+
+rafId =
+    requestAnimationFrame(drawIdle);
+
+
+
+// --------------------------------------------------
+// SPEECH RECOGNITION
+// --------------------------------------------------
+
+const SR =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+let recognition;
+
+let listening = false;
+
+let cancelled = false;
+
+let awaitingFollowup = false;
+
+
+const IDLE_PROMPT =
+    "What do you want to hear?";
+
+
+// Prevent duplicate email generation
+
+let emailGenerated = false;
+
+// Prevent multiple requests at the same time
+
+let generatingEmail = false;
+
+// last command spoken, used for dedupe
+
+let lastCommand = "";
+
+// YouTube tab reference
+
+let youtubeTab = null;
+
+// recently played songs, most recent first
+
+let recentSongs = [];
+
+
+
+// --------------------------------------------------
+// WAKE WORD HELPERS
+// --------------------------------------------------
+
+function isJustWakeWord(text){
+
+    const cleaned =
+        text.replace(/[^a-z\s]/gi, "").trim().toLowerCase();
+
+    return (
+        cleaned === "sonara" ||
+        cleaned === "hey sonara"
+    );
+
+}
+
+
+function stripWakeWord(text){
+
+    return text.replace(
+        /^\s*(hey\s+)?sonara\b[,!.]?\s*/i,
+        ""
+    ).trim();
+
+}
+
+
+
+// --------------------------------------------------
+// GMAIL KEYWORD DETECTION
+// --------------------------------------------------
+//
+// Gmail requires BOTH:
+//
+// create
+// email
+//
+// Examples:
+//
+// "create email for my boss"
+// "create an email for my manager"
+//
+// --------------------------------------------------
+
+function isGmail(command){
+
+    const hasCreate =
+        /\bcreate\b/i.test(command);
+
+    const hasEmail =
+        /\bemail\b/i.test(command);
+
+    return (
+        hasCreate &&
+        hasEmail
+    );
+
+}
+
+
+
+// --------------------------------------------------
+// UI HELPERS
+// --------------------------------------------------
+
+function setStatus(text, kind){
+
+    statusText.textContent = text;
+
+    statusDot.className =
+        "dot" + (kind ? " " + kind : "");
+
+}
+
+
+function setListening(isListening){
+
+    listening = isListening;
+
+    body.classList.toggle("listening", isListening);
+
+}
+
+
+function showIdlePrompt(){
+
+    transcriptEl.classList.add("idle");
+
+    transcriptEl.textContent = IDLE_PROMPT;
+
+}
+
+
+function renderTranscript(text){
+
+    transcriptEl.classList.remove("idle");
+
+    const words =
+        text.split(" ").filter(Boolean);
+
+    if(words.length === 0){
+
+        transcriptEl.textContent = "";
+
+        return;
+
+    }
+
+    const last =
+        words.pop();
+
+    transcriptEl.innerHTML =
+        (words.length ? '<span class="said">' + words.join(" ") + " </span>" : "") +
+        '<span class="current">' + last + "</span>";
+
+    transcriptEl.classList.remove("pop");
+
+    void transcriptEl.offsetWidth;
+
+    transcriptEl.classList.add("pop");
+
+}
+
+
+function resetAll(){
+
+    if(listening){
+
+        cancelled = true;
+
+        try{
+            recognition && recognition.abort();
+        }
+        catch(e){}
+
+    }
+
+    setListening(false);
+
+    stopAudioVisual();
+
+    releaseMicStream();
+
+    setStatus("Idle");
+
+    showIdlePrompt();
+
+    hint.textContent =
+        "Tap the mic to speak";
+
+    examples.classList.remove("hide");
+
+    editor.classList.remove("open");
+
+    editor.style.display = "none";
+
+    emailGenerated = false;
+
+    lastCommand = "";
+
+}
+
+
+
+// --------------------------------------------------
+// SPEECH RECOGNITION SETUP
+// --------------------------------------------------
+
+if(!SR){
+
+    setStatus("Unavailable", "error");
+
+    mic.disabled = true;
+
+    hint.textContent =
+        "Speech recognition isn't supported in this browser";
+
+}
+else{
+
+    recognition =
+        new SR();
+
+    recognition.lang = "en-US";
+
+    recognition.continuous = false;
+
+    recognition.interimResults = true;
+
+
+    recognition.onstart = () => {
+
+        cancelled = false;
+
+        setListening(true);
+
+        setStatus("Listening", "listening");
+
+        hint.textContent =
+            "Tap the mic again to stop";
+
+        examples.classList.add("hide");
+
+        transcriptEl.classList.remove("idle");
+
+        transcriptEl.textContent = "";
+
+        startAudioVisual();
+
+    };
+
+
+    recognition.onend = () => {
+
+        setListening(false);
+
+        stopAudioVisual();
+
+        if(awaitingFollowup){
+
+            awaitingFollowup = false;
+
+            try{
+                recognition.start();
+            }
+            catch(e){}
+
+            return;
+
+        }
+
+        if(cancelled){
+
+            setStatus("Cancelled");
+
+            hint.textContent =
+                "Tap the mic to speak";
+
+            examples.classList.remove("hide");
+
+            showIdlePrompt();
+
+            cancelled = false;
+
+        }
+
+    };
+
+
+    recognition.onerror = e => {
+
+        setListening(false);
+
+        stopAudioVisual();
+
+        awaitingFollowup = false;
+
+        if(
+            cancelled ||
+            e.error === "aborted"
+        ){
+
+            setStatus("Cancelled");
+
+            showIdlePrompt();
+
+            cancelled = false;
+
+        }
+        else{
+
+            setStatus("Voice error: " + e.error, "error");
+
+            hint.textContent =
+                "Try tapping the mic again";
+
+        }
+
+    };
+
+
+    recognition.onresult = e => {
+
+        const result =
+            e.results[e.results.length - 1];
+
+        const text =
+            result[0].transcript.trim();
+
+        renderTranscript(text);
+
+        if(!result.isFinal)
+            return;
+
+        if(!text){
+
+            setStatus("No command detected", "error");
+
+            showIdlePrompt();
+
+            return;
+
+        }
+
+        if(isJustWakeWord(text)){
+
+            setStatus("Yes sir", "listening");
+
+            hint.textContent =
+                "Say a song title or an email command";
+
+            transcriptEl.classList.remove("idle");
+
+            transcriptEl.innerHTML =
+                '<span class="current">Yes sir</span>';
+
+            transcriptEl.classList.remove("pop");
+
+            void transcriptEl.offsetWidth;
+
+            transcriptEl.classList.add("pop");
+
+            speak("Yes sir");
+
+            awaitingFollowup = true;
+
+            try{
+                recognition.stop();
+            }
+            catch(e){}
+
+            return;
+
+        }
+
+        const command =
+            stripWakeWord(text);
+
+        if(!command){
+
+            setStatus("No command detected", "error");
+
+            showIdlePrompt();
+
+            return;
+
+        }
+
+        lastCommand = command;
+
+        processCommand(command);
+
+    };
+
+
+    mic.onclick = () => {
+
+        if(listening){
+
+            cancelled = true;
+
+            recognition.abort();
+
+            playTone(440, 0.1);
+
+            return;
+
+        }
+
+        playTone(880, 0.09);
+
+        try{
+
+            recognition.start();
+
+        }
+        catch(e){
+
+            console.log(e);
+
+        }
+
+    };
+
+}
+
+
+
+// --------------------------------------------------
+// MAIN COMMAND PROCESSOR
+// --------------------------------------------------
+
+async function processCommand(command){
+
+    const gmail =
+        isGmail(command);
+
+
+    // ----------------------------------------------
+    // GMAIL COMMAND
+    // ----------------------------------------------
+
+    if(gmail){
+
+        if(generatingEmail){
+
+            setStatus("Generating...", "listening");
+
+            hint.textContent =
+                "Email is already being generated...";
+
+            return;
+
+        }
+
+        if(
+            emailGenerated &&
+            command === lastCommand
+        ){
+
+            setStatus("Ready", "success");
+
+            hint.textContent =
+                "Email already generated.";
+
+            return;
+
+        }
+
+        generatingEmail = true;
+
+        setStatus("Generating email...", "listening");
+
+        hint.textContent =
+            "Hang tight...";
+
+        try{
+
+            const response =
+                await fetch(
+                    "/agent",
+                    {
+                        method:"POST",
+
+                        headers:{
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:JSON.stringify({
+                            command:command
+                        })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if(
+                !response.ok ||
+                !data.success
+            ){
+
+                throw Error(
+                    data.message ||
+                    "Email request failed"
+                );
+
+            }
+
+            showEmail(data);
+
+            emailGenerated = true;
+
+            setStatus("Ready", "success");
+
+            hint.textContent =
+                "Email ready. Review or edit it.";
+
+        }
+        catch(error){
+
+            console.error(error);
+
+            setStatus(error.message || "Email generation failed", "error");
+
+            hint.textContent =
+                "Tap the mic to try again";
+
+        }
+        finally{
+
+            generatingEmail = false;
+
+        }
+
+        return;
+
+    }
+
+
+    // ----------------------------------------------
+    // SONG COMMAND (default)
+    // ----------------------------------------------
+
+    await playSong(command);
+
+}
+
+
+
+// --------------------------------------------------
+// SONG SEARCH
+// --------------------------------------------------
+
+async function playSong(command){
+
+    setStatus("Finding song...", "listening");
+
+    hint.textContent =
+        "Hang tight...";
+
+    try{
+
+        const response =
+            await fetch(
+                "/youtube/play",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        command:command
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(!data.success){
+
+            setStatus(data.message || "Song not found", "error");
+
+            hint.textContent =
+                "Tap the mic to try again";
+
+            return;
+
+        }
+
+        playYouTube(data);
+
+        addRecentSong(command);
+
+        setStatus("Now playing", "success");
+
+        hint.textContent =
+            "Tap the mic to search again";
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        setStatus("Connection failed", "error");
+
+        hint.textContent =
+            "Check your connection and try again";
+
+    }
+
+}
+
+
+
+// --------------------------------------------------
+// SHOW GENERATED EMAIL
+// --------------------------------------------------
+
+function showEmail(data){
+
+    recipient.dataset.email =
+        data.recipient || "";
+
+    recipient.textContent =
+        data.recipient
+        ? "To: " + data.recipient
+        : "Recipient not specified";
+
+    subject.value =
+        data.subject || "";
+
+    emailBody.value =
+        data.body || "";
+
+    editor.style.display = "block";
+
+    void editor.offsetWidth;
+
+    editor.classList.add("open");
+
+}
+
+
+
+// --------------------------------------------------
+// OPEN GMAIL
+// --------------------------------------------------
+
+$("open").onclick = () => {
+
+    const url =
+        "https://mail.google.com/mail/u/0/?" +
+        new URLSearchParams({
+            view:"cm",
+            fs:"1",
+            to:recipient.dataset.email || "",
+            su:subject.value,
+            body:emailBody.value
+        });
+
+    const win =
+        window.open(url, "SonaraGmail");
+
+    if(!win){
+
+        setStatus("Popup blocked", "error");
+
+        hint.textContent =
+            "Please allow popups for this site.";
+
+    }
+
+};
+
+
+
+// --------------------------------------------------
+// REGENERATE BUTTON
+// --------------------------------------------------
+//
+// Calls /agent again with the last spoken command
+// and replaces the current draft.
+// --------------------------------------------------
+
+$("regen").onclick = async () => {
+
+    if(
+        generatingEmail ||
+        !lastCommand
+    )
+        return;
+
+    generatingEmail = true;
+
+    const regenBtn =
+        $("regen");
+
+    const originalLabel =
+        regenBtn.innerHTML;
+
+    regenBtn.disabled = true;
+
+    hint.textContent =
+        "Regenerating...";
+
+    try{
+
+        const response =
+            await fetch(
+                "/agent",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        command:lastCommand
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(
+            !response.ok ||
+            !data.success
+        ){
+
+            throw Error(
+                data.message ||
+                "Email request failed"
+            );
+
+        }
+
+        showEmail(data);
+
+        hint.textContent =
+            "New draft ready.";
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        hint.textContent =
+            error.message || "Regeneration failed";
+
+    }
+    finally{
+
+        generatingEmail = false;
+
+        regenBtn.disabled = false;
+
+        regenBtn.innerHTML = originalLabel;
+
+    }
+
+};
+
+
+
+// --------------------------------------------------
+// COPY EMAIL TO CLIPBOARD
+// --------------------------------------------------
+
+$("copyEmail").onclick = async () => {
+
+    const copyBtn =
+        $("copyEmail");
+
+    const originalLabel =
+        copyBtn.innerHTML;
+
+    const text =
+        "Subject: " + subject.value + "\n\n" + emailBody.value;
+
+    try{
+
+        await navigator.clipboard.writeText(text);
+
+        copyBtn.innerHTML =
+            "Copied";
+
+    }
+    catch(error){
+
+        console.log("Clipboard unavailable", error);
+
+        copyBtn.innerHTML =
+            "Couldn't copy";
+
+    }
+
+    setTimeout(() => {
+
+        copyBtn.innerHTML = originalLabel;
+
+    }, 1600);
+
+};
+
+
+
+// --------------------------------------------------
+// YOUTUBE PLAYBACK
+// --------------------------------------------------
+
+function playYouTube(data){
+
+    if(
+        !youtubeTab ||
+        youtubeTab.closed
+    ){
+
+        youtubeTab =
+            window.open(data.url, "SonaraYouTube");
+
+    }
+    else{
+
+        youtubeTab.location.href = data.url;
+
+        youtubeTab.focus();
+
+    }
+
+}
+
+
+
+// --------------------------------------------------
+// RECENTLY PLAYED
+// --------------------------------------------------
+
+function addRecentSong(command){
+
+    recentSongs =
+        recentSongs.filter(c => c.toLowerCase() !== command.toLowerCase());
+
+    recentSongs.unshift(command);
+
+    recentSongs =
+        recentSongs.slice(0, 4);
+
+    renderRecentSongs();
+
+}
+
+
+function renderRecentSongs(){
+
+    recent.innerHTML = "";
+
+    recentSongs.forEach(title => {
+
+        const chip =
+            document.createElement("button");
+
+        chip.type = "button";
+
+        chip.className = "recent-chip";
+
+        chip.innerHTML =
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+            "<span></span>";
+
+        chip.querySelector("span").textContent = title;
+
+        chip.onclick = () => {
+
+            setStatus("Finding song...", "listening");
+
+            hint.textContent =
+                "Hang tight...";
+
+            playSong(title);
+
+        };
+
+        recent.appendChild(chip);
+
+    });
+
+}
+
+
+closeBtn.onclick = resetAll;
+
+
+// --------------------------------------------------
+// KEYBOARD SHORTCUT (spacebar to talk)
+// --------------------------------------------------
+
+window.addEventListener("keydown", e => {
+
+    if(e.code !== "Space")
+        return;
+
+    if(e.repeat)
+        return;
+
+    const tag =
+        (document.activeElement && document.activeElement.tagName) || "";
+
+    if(
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "BUTTON"
+    )
+        return;
+
+    e.preventDefault();
+
+    mic.click();
+
+});
+
+</script>
+
+</body>
+
+</html>
